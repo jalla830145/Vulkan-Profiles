@@ -20,6 +20,8 @@ option(REGENERATE_PROFILES "Regenerate profiles source and headers" ON)
 option(REGENERATE_JSONCPP "Regenerate jsoncpp source and headers" ON)
 option(REGENERATE_LAYER "Regenerate profiles layer source" ON)
 
+option(PROFILES_BUILD_TESTS "Build profile tests" ON)
+
 if (UPDATE_DEPS)
     find_package(PythonInterp 3 REQUIRED)
 
@@ -110,6 +112,11 @@ set(jsoncpp_generated_dir ${CMAKE_SOURCE_DIR}/external/generated-jsoncpp)
 set(jsoncpp_generated_source ${jsoncpp_generated_dir}/jsoncpp.cpp)
 set(jsoncpp_generated_include_dir ${jsoncpp_generated_dir})
 set(jsoncpp_generated_header ${jsoncpp_generated_include_dir}/json/json.h)
+
+if(PROFILES_BUILD_TESTS)
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    add_subdirectory(external/googletest)
+endif()
 
 if (NOT ANDROID)
     # The vulkan loader search is:
@@ -206,7 +213,6 @@ if (WIN32)
                          IMPORTED_LOCATION_DEBUG "${JSONCPP_DLIB}")
 endif()
 
-find_package(jsoncpp REQUIRED CONFIG)
 find_package(valijson REQUIRED CONFIG)
 
 # Always need C++2011 throughout the project.
@@ -283,9 +289,6 @@ endif()
 add_subdirectory(layer)
 
 if (PROFILES_BUILD_TESTS)
-    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-    add_subdirectory(external/googletest)
-
     add_subdirectory(profiles/test)
 endif()
 
