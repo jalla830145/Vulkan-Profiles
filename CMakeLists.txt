@@ -87,9 +87,6 @@ else()
     find_package(PythonInterp 3 QUIET)
 endif()
 
-if (JSONCPP_INSTALL_DIR)
-    list(APPEND CMAKE_PREFIX_PATH ${JSONCPP_INSTALL_DIR})
-endif()
 if (VALIJSON_INSTALL_DIR)
     list(APPEND CMAKE_PREFIX_PATH ${VALIJSON_INSTALL_DIR})
 endif()
@@ -108,6 +105,11 @@ include_directories(${VULKAN_VALIDATIONLAYERS_INSTALL_DIR}/include/vulkan)
 set(Vulkan-ValidationLayers_INCLUDE_DIR "${VULKAN_VALIDATIONLAYERS_INSTALL_DIR}/include/vulkan")
 set(Vulkan-ValidationLayers_LIBRARY_DIR "${VULKAN_VALIDATIONLAYERS_INSTALL_DIR}/lib")
 #find_library(VkLayer_utils_LIBRARY VkLayer_utils HINTS ${Vulkan-ValidationLayers_LIBRARY_DIR})
+
+set(jsoncpp_generated_dir ${CMAKE_SOURCE_DIR}/external/generated-jsoncpp)
+set(jsoncpp_generated_source ${jsoncpp_generated_dir}/jsoncpp.cpp)
+set(jsoncpp_generated_include_dir ${jsoncpp_generated_dir})
+set(jsoncpp_generated_header ${jsoncpp_generated_include_dir}/json/json.h)
 
 if (NOT ANDROID)
     # The vulkan loader search is:
