@@ -104,6 +104,10 @@ find_package(VulkanHeaders REQUIRED CONFIG QUIET)
 set(VULKAN_HEADER_REGISTRY ${CMAKE_CURRENT_SOURCE_DIR}/external/Vulkan-Headers/registry)
 
 include_directories(external/Vulkan-Headers/include)
+include_directories(${VULKAN_VALIDATIONLAYERS_INSTALL_DIR}/include/vulkan)
+set(Vulkan-ValidationLayers_INCLUDE_DIR "${VULKAN_VALIDATIONLAYERS_INSTALL_DIR}/include/vulkan")
+set(Vulkan-ValidationLayers_LIBRARY_DIR "${VULKAN_VALIDATIONLAYERS_INSTALL_DIR}/lib")
+#find_library(VkLayer_utils_LIBRARY VkLayer_utils HINTS ${Vulkan-ValidationLayers_LIBRARY_DIR})
 
 if (NOT ANDROID)
     # The vulkan loader search is:
