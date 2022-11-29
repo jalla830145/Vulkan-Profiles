@@ -215,9 +215,6 @@ endif()
 
 find_package(valijson REQUIRED CONFIG)
 
-# Always need C++2011 throughout the project.
-set(CMAKE_CXX_STANDARD 17)
-
 # FetchContent_MakeAvailable(jsoncpp) will set these values (which
 # affect the whole build).  Make sure they're set even if we
 # don't regenerate jsoncpp.
