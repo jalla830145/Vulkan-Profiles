@@ -54,6 +54,14 @@
             ]
         },
         {
+            "name": "jsoncpp",
+            "url": "https://github.com/open-source-parsers/jsoncpp.git",
+            "sub_dir": "jsoncpp",
+            "build_dir": "jsoncpp/build",
+            "install_dir": "jsoncpp/build/install",
+            "commit": "1.9.5"
+        },
+        {
             "name": "valijson",
             "url": "https://github.com/tristanpenman/valijson.git",
             "sub_dir": "valijson",
@@ -82,6 +90,7 @@
         "Vulkan-Headers": "VULKAN_HEADERS_INSTALL_DIR",
         "Vulkan-Loader": "VULKAN_LOADER_INSTALL_DIR",
         "Vulkan-ValidationLayers": "VULKAN_VALIDATIONLAYERS_INSTALL_DIR",
+        "jsoncpp": "JSONCPP_INSTALL_DIR",
         "valijson": "VALIJSON_INSTALL_DIR",
         "googletest": "GOOGLETEST_INSTALL_DIR"
     }

@@ -33,7 +33,7 @@ add_custom_command(
 	VERBATIM)
 add_dependencies(${TEST_NAME} VpGenerated)
 
-target_link_libraries(${TEST_NAME} PRIVATE gtest gtest_main)
+target_link_libraries(${TEST_NAME} PRIVATE gtest gtest_main ${jsoncpp_LIBRARY})
 add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME} --gtest_catch_exceptions=0)
 
 set_target_properties(${TEST_NAME} PROPERTIES FOLDER "Profiles schema")

@@ -7,11 +7,6 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET "10.12" CACHE STRING "Minimum OS X deployment ve
 
 project(VULKAN_PROFILES LANGUAGES CXX C)
 
-set(PROFILES_CPP_STANDARD 17 CACHE STRING "Set the C++ standard to build against.")
-set(CMAKE_CXX_STANDARD ${PROFILES_CPP_STANDARD})
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
 # Regenerating profiles requires Python 3.7.2 or better (for typing.OrderedDict).
 # Regeneration jsoncpp requires Python 3.
 # Otherwise Python is not required, as checked-in generated code and
@@ -89,6 +84,9 @@ else()
     find_package(PythonInterp 3 QUIET)
 endif()
 
+if (JSONCPP_INSTALL_DIR)
+    list(APPEND CMAKE_PREFIX_PATH ${JSONCPP_INSTALL_DIR})
+endif()
 if (VALIJSON_INSTALL_DIR)
     list(APPEND CMAKE_PREFIX_PATH ${VALIJSON_INSTALL_DIR})
 endif()
@@ -106,12 +104,17 @@ include_directories(external/Vulkan-Headers/include)
 include_directories(${VULKAN_VALIDATIONLAYERS_INSTALL_DIR}/include/vulkan)
 set(Vulkan-ValidationLayers_INCLUDE_DIR "${VULKAN_VALIDATIONLAYERS_INSTALL_DIR}/include/vulkan")
 set(Vulkan-ValidationLayers_LIBRARY_DIR "${VULKAN_VALIDATIONLAYERS_INSTALL_DIR}/lib")
-#find_library(VkLayer_utils_LIBRARY VkLayer_utils HINTS ${Vulkan-ValidationLayers_LIBRARY_DIR})
 
-set(jsoncpp_generated_dir ${CMAKE_SOURCE_DIR}/external/generated-jsoncpp)
-set(jsoncpp_generated_source ${jsoncpp_generated_dir}/jsoncpp.cpp)
-set(jsoncpp_generated_include_dir ${jsoncpp_generated_dir})
-set(jsoncpp_generated_header ${jsoncpp_generated_include_dir}/json/json.h)
+
+find_package(valijson REQUIRED CONFIG)
+find_package(jsoncpp REQUIRED CONFIG)
+
+find_library(jsoncpp_LIBRARY jsoncpp HINTS ${jsoncpp_INSTALL_DIR}/lib)
+
+#set(jsoncpp_generated_dir ${CMAKE_SOURCE_DIR}/external/generated-jsoncpp)
+#set(jsoncpp_generated_source ${jsoncpp_generated_dir}/jsoncpp.cpp)
+#set(jsoncpp_generated_include_dir ${jsoncpp_generated_dir})
+#set(jsoncpp_generated_header ${jsoncpp_generated_include_dir}/json/json.h)
 
 if(PROFILES_BUILD_TESTS)
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
@@ -133,6 +136,11 @@ if (NOT ANDROID)
     set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH};${VULKAN_LOADER_INSTALL_DIR};${VULKAN_HEADERS_INSTALL_DIR};$ENV{VULKAN_LOADER_INSTALL_DIR};$ENV{VULKAN_HEADERS_INSTALL_DIR})
     find_package(Vulkan)
 endif()
+
+set(PROFILES_CPP_STANDARD 17 CACHE STRING "Set the C++ standard to build against.")
+set(CMAKE_CXX_STANDARD ${PROFILES_CPP_STANDARD})
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_CXX_VISIBILITY_PRESET "hidden")
@@ -185,50 +193,6 @@ elseif(MSVC)
         add_compile_options(/wd4100 /wd4505 /wd4702 /wd4389 /wd4245 /wd4305 /wd4018)
 endif()
 
-# NOTE: jsoncpp is located in SUBPROJECTS_DIR.
-set (SUBPROJECTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external)
-
-find_path(JSONCPP_INCLUDE_DIR json/json.h HINTS "${SUBPROJECTS_DIR}/jsoncpp/dist"
-                                                   "${SUBPROJECTS_DIR}/JsonCpp/dist"
-                                                   "${SUBPROJECTS_DIR}/JsonCPP/dist"
-                                                   "${SUBPROJECTS_DIR}/JSONCPP/dist"
-                                                   "${CMAKE_SOURCE_DIR}/../jsoncpp/dist"
-                                             DOC "Path to jsoncpp/dist/json/json.h")
-
-find_path(JSONCPP_SOURCE_DIR jsoncpp.cpp HINTS "${SUBPROJECTS_DIR}/jsoncpp/dist"
-                                                   "${SUBPROJECTS_DIR}/JsonCpp/dist"
-                                                   "${SUBPROJECTS_DIR}/JsonCPP/dist"
-                                                   "${SUBPROJECTS_DIR}/JSONCPP/dist"
-                                                   "${CMAKE_SOURCE_DIR}/../jsoncpp/dist"
-                                             DOC "Path to jsoncpp/dist/jsoncpp.cpp")
-
-find_library(JSONCPP_LIB NAMES jsoncpp HINTS ${JSONCPP_SEARCH_PATH} )
-
-if (WIN32)
-    add_library(jsoncpp         STATIC IMPORTED)
-    find_library(JSONCPP_DLIB NAMES jsoncpp
-                 HINTS ${JSONCPP_DEBUG_SEARCH_PATH} )
-    set_target_properties(jsoncpp PROPERTIES
-                         IMPORTED_LOCATION       "${JSONCPP_LIB}"
-                         IMPORTED_LOCATION_DEBUG "${JSONCPP_DLIB}")
-endif()
-
-find_package(valijson REQUIRED CONFIG)
-
-# FetchContent_MakeAvailable(jsoncpp) will set these values (which
-# affect the whole build).  Make sure they're set even if we
-# don't regenerate jsoncpp.
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib" CACHE PATH "Archive output dir.")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib" CACHE PATH "Library output dir.")
-set(CMAKE_PDB_OUTPUT_DIRECTORY     "${CMAKE_BINARY_DIR}/bin" CACHE PATH "PDB (MSVC debug symbol)output dir.")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin" CACHE PATH "Executable/dll output dir.")
-
-
-#set(jsoncpp_generated_dir ${CMAKE_SOURCE_DIR}/external/generated-jsoncpp)
-#set(jsoncpp_generated_source ${jsoncpp_generated_dir}/jsoncpp.cpp)
-#set(jsoncpp_generated_include_dir ${jsoncpp_generated_dir})
-#set(jsoncpp_generated_header ${jsoncpp_generated_include_dir}/json/json.h)
-
 # Vulkan-ValidationLayers settings
 set(UPDATE_DEPS ON)
 set(BUILD_TESTS OFF)
@@ -265,13 +229,13 @@ if (WIN32)
         set_target_properties(VkLayer_copy-${target}-def-file PROPERTIES FOLDER "Profiles layer")
 
         add_library(VkLayer_${target} SHARED ${ARGN} VkLayer_${target}.def)
-        target_link_Libraries(VkLayer_${target} ${VkLayer_utils_LIBRARY} vku)
+        target_link_Libraries(VkLayer_${target} ${VkLayer_utils_LIBRARY} ${jsoncpp_LIBRARY} vku)
         set_target_properties(VkLayer_${target} PROPERTIES FOLDER "Profiles layer")
     endmacro()
 else()
     macro(add_vk_layer target)
         add_library(VkLayer_${target} SHARED ${ARGN})
-        target_link_Libraries(VkLayer_${target} ${VkLayer_utils_LIBRARY} vku)
+        target_link_Libraries(VkLayer_${target} ${VkLayer_utils_LIBRARY} ${jsoncpp_LIBRARY} vku)
         if(ANDROID)
             # Android needs -llog for __android_print_log()
             target_link_Libraries(VkLayer_${target} log)
